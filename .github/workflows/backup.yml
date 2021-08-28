@@ -1,1 +1,37 @@
+name: 备份
+on:
+  #schedule:
+  #  - cron: "0 */4 * * *"
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: Ubuntu-20.04  
+    steps:
+    - uses: actions/checkout@v2
+    - name: 编译开始...
+      run: |
+        git clone -b jd_scripts https://github.com/Aaron-lv/sync.git    
+        cp -rf sync/* ./
+        rm -rf sync
 
+    - name: '提交更新'
+      id: commit
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git diff --quiet && git diff --staged --quiet || git commit -am 'update'
+    - name: Push Dust
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.PAT }}
+        branch: main
+   
+    - name: 删除旧的工作流
+      uses: GitRML/delete-workflow-runs@main
+      with:
+        token: ${{ secrets.PAT }}
+        repository: ${{ github.repository }}
+        retain_days: 1
+        keep_minimum_runs: 1
