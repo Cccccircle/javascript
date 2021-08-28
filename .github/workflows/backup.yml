@@ -1,12 +1,14 @@
 name: 备份
 on:
-  #schedule:
-  #  - cron: "0 */4 * * *"
+  schedule:
+    - cron: "0 */4 * * *"
   workflow_dispatch:
   
 jobs:
   build:
     runs-on: Ubuntu-20.04  
+    if: github.event.repository.owner.id == github.event.sender.id
+
     steps:
     - uses: actions/checkout@v2
     - name: 备份开始...
