@@ -9,7 +9,7 @@ jobs:
     runs-on: Ubuntu-20.04  
     steps:
     - uses: actions/checkout@v2
-    - name: 编译开始...
+    - name: 备份开始...
       run: |
         git clone -b jd_scripts https://github.com/Aaron-lv/sync.git    
         cp -rf sync/* ./
