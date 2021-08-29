@@ -30,10 +30,10 @@ jobs:
         github_token: ${{ secrets.PAT }}
         branch: main
    
-    - name: 删除旧的工作流
-      uses: GitRML/delete-workflow-runs@main
-      with:
-        token: ${{ secrets.PAT }}
-        repository: ${{ github.repository }}
-        retain_days: 1
-        keep_minimum_runs: 1
+    - name: delete workflow runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 1
+          keep_minimum_runs: 1
