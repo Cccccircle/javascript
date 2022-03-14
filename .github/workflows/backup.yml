@@ -18,7 +18,7 @@ jobs:
         cp -rf JavaScript/* ./
         rm -rf JavaScript
         mkdir ks
-        mv ks* ./ks
+        mv ks*.js ./ks
 
     - name: '提交更新'
       id: commit
