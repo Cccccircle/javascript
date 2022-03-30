@@ -17,8 +17,8 @@ jobs:
         git clone https://github.com/leafxcy/JavaScript.git      
         cp -rf JavaScript/* ./
         rm -rf JavaScript
-        mv zqkd diy
-        mv ks* diy
+        mv zqkd/* ./
+        rm -rf zqkd
 
     - name: '提交更新'
       id: commit
