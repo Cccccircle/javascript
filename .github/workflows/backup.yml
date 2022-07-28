@@ -14,11 +14,9 @@ jobs:
     - name: 备份开始...
       run: |
         #rm -rf ./* 
-        git clone https://github.com/leafxcy/JavaScript.git      
-        cp -rf JavaScript/* ./
-        rm -rf JavaScript
-        mv zqkd/* ./
-        rm -rf zqkd
+        git clone https://github.com/leafTheFish/DeathNote.git      
+        cp -rf DeathNote/* ./
+        rm -rf DeathNote
 
     - name: '提交更新'
       id: commit
