@@ -1,36 +1,20 @@
 /*
-微信小程序：康师傅畅饮社
-邀请链接：https://raw.githubusercontent.com/leafTheFish/DeathNote/main//ksfcys.png
+#科技玩家-签到
+cron: 34 9,21 * * *
 
-1200+积分换5元京东E卡
-脚本自动签到，默认不会抽奖
-如果需要自动抽奖，请设置变量ksfcysDraw为true
-
-青龙捉club.biqr.cn的任意包，把Token值填到变量ksfcysToken里，多账号@隔开
-
-V2P/圈X 重写：
-点击签到或者我的自动获取
-
-[task_local]
-#康师傅畅饮社
-42 9,18 * * * https://raw.githubusercontent.com/leafTheFish/DeathNote/main//ksfcys.js, tag=康师傅畅饮社, enabled=true
-[rewrite_local]
-https://club.biqr.cn/api/member/getMemberInfo url script-request-header https://raw.githubusercontent.com/leafTheFish/DeathNote/main//ksfcys.js
-[MITM]
-hostname = club.biqr.cn
+export kjwjCookie='username=你的账号; password=你的密码;'
 */
-const $ = new Env('康师傅畅饮社');
-const jsname = '康师傅畅饮社'
+const $ = new Env('科技玩家签到');
+const jsname = '科技玩家签到'
 const logDebug = 0
 
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
 let notifyStr = ''
 
+let envSplitor = ['\n','#']
 let httpResult //global buffer
 
-let userCookie = ($.isNode() ? process.env.ksfcysToken : $.getdata('ksfcysToken')) || '';
-let DO_LUCKYDRAW = ($.isNode() ? process.env.ksfcysDraw : $.getdata('ksfcysDraw')) || false;
-
+let userCookie = ($.isNode() ? process.env.kjwjCookie : $.getdata('kjwjCookie')) || '';
 let userList = []
 
 let userIdx = 0
@@ -40,86 +24,69 @@ let userCount = 0
 class UserInfo {
     constructor(str) {
         this.index = ++userIdx
-        this.token = str
-        this.integral = 0
-        this.nickname = ''
-        this.valid = false
+        this.usr = str.indexOf('username=')>-1 ? str.match(/username=(.+?);/)[1] : ''
+        this.pwd = str.indexOf('password=')>-1 ? str.match(/password=(.+?);/)[1] : ''
+        this.token = ''
     }
     
-    async getSignInStatus() {
-        let url = `https://club.biqr.cn/api/signIn/integralSignInList`
+    async login() {
+        if(!this.usr || !this.pwd) {
+            console.log(`账号[${this.index}]没有找到正确的用户名密码，请检查`)
+            return;
+        }
+        let url = `https://www.kejiwanjia.com/wp-json/jwt-auth/v1/token`
+        let body = `nickname=&username=${encodeURIComponent(this.usr)}&password=${this.pwd}&code=&img_code=&invitation_code=&token=&smsToken=&luoToken=&confirmPassword=&loginType=`
+        let urlObject = populateUrlObject(url,this.token,body)
+        await httpRequest('post',urlObject)
+        let result = httpResult;
+        if(!result) return
+        //console.log(result)
+        if(result.code) {
+            console.log(`账号[${this.index}]登录失败：${result.message}`)
+        } else {
+            this.name = result.name
+            this.token = result.token
+            console.log(`账号[${this.name}]登录成功，现有积分：${result.credit}`)
+            await $.wait(500);
+            await this.getUserMission();
+        }
+    }
+    
+    async getUserMission() {
+        let url = `https://www.kejiwanjia.com/wp-json/b2/v1/getUserMission`
+        let body = `count=5&paged=1`
+        let urlObject = populateUrlObject(url,this.token,body)
+        await httpRequest('post',urlObject)
+        let result = httpResult;
+        if(!result) return
+        //console.log(result)
+        if(result.code) {
+            console.log(`账号[${this.name}]签到失败：${result}`)
+        } else {
+            if(result.mission.credit == 0) {
+                await $.wait(500);
+                await this.doSign();
+            } else {
+                console.log(`账号[${this.name}]今天已签到，获得了${result.mission.credit}积分`)
+            }
+        }
+    }
+    
+    async doSign() {
+        let url = `https://www.kejiwanjia.com/wp-json/b2/v1/userMission`
         let body = ``
         let urlObject = populateUrlObject(url,this.token,body)
         await httpRequest('post',urlObject)
         let result = httpResult;
         if(!result) return
         //console.log(result)
-        if(result.code == 0) {
-            this.valid = true
-            this.isSign = result.data.signIs
-            let signStr = this.isSign ? '已' : '未'
-            console.log(`账号[${this.index}]登录成功，今天${signStr}签到`)
-            if(this.isSign) return;
-            await $.wait(500)
-            await this.signIn()
+        if(result.code) {
+            console.log(`账号[${this.name}]签到失败：${result}`)
         } else {
-            console.log(`账号[${this.index}]登录失败，请尝试重新捉token: ${result.msg}`)
+            if(result.credit) {
+                console.log(`账号[${this.name}]签到成功，获得${result.credit}积分，现有积分：${result.mission.my_credit}`)
+            }
         }
-    }
-    
-    async signIn() {
-        let url = `https://club.biqr.cn/api/signIn/integralSignIn`
-        let body = ``
-        let urlObject = populateUrlObject(url,this.token,body)
-        await httpRequest('post',urlObject)
-        let result = httpResult;
-        if(!result) return
-        //console.log(result)
-        console.log(`账号[${this.index}]签到：${result.msg}`)
-    }
-    
-    async luckydraw() {
-        let url = `https://club.biqr.cn/api/game/turntable/open`
-        let body = ``
-        let urlObject = populateUrlObject(url,this.token,body)
-        await httpRequest('post',urlObject)
-        let result = httpResult;
-        if(!result) return
-        //console.log(result)
-        if(result.code == 0) {
-            console.log(`账号[${this.index}]消耗50积分抽奖获得：${result.data.name}`)
-        } else {
-            console.log(`账号[${this.index}]抽奖失败: ${result.msg}`)
-        }
-    }
-    
-    async getMemberInfo() {
-        let url = `https://club.biqr.cn/api/member/getMemberInfo`
-        let body = ``
-        let urlObject = populateUrlObject(url,this.token,body)
-        await httpRequest('get',urlObject)
-        let result = httpResult;
-        if(!result) return
-        //console.log(result)
-        if(result.code == 0) {
-            this.nickname = result.data.nickname
-            this.integral = result.data.integral
-        } else {
-            console.log(`账号[${this.index}]查询积分失败: ${result.msg}`)
-        }
-    }
-    
-    async userTask() {
-        console.log(`\n================ 开始账号[${this.index}] ================`)
-        await this.getSignInStatus()
-        if(!this.valid) return;
-        await $.wait(500)
-        await this.getMemberInfo()
-        if(DO_LUCKYDRAW && this.integral>=50) {
-            await $.wait(500)
-            await this.luckydraw()
-        }
-        console.log(`账号[${this.index}] 【${this.nickname}】当前积分：${this.integral}`)
     }
 }
 
@@ -129,13 +96,9 @@ class UserInfo {
     }else {
         if(!(await checkEnv())) return;
         
-        let drawStr = DO_LUCKYDRAW ? '自动抽奖' : '不抽奖'
-        console.log(`当前设置抽奖开关为：${drawStr}`)
-        console.log('每次抽奖需要消耗50积分，有可能抽不中')
-        console.log('如果需要自动抽奖，请设置变量ksfcysDraw为true，否则设置为false')
         for(let user of userList) {
-            await user.userTask(); 
-            await $.wait(300);
+            await user.login(); 
+            await $.wait(200);
         }
     }
 })()
@@ -144,26 +107,33 @@ class UserInfo {
 
 ///////////////////////////////////////////////////////////////////
 async function GetRewrite() {
-    if($request.url.indexOf(`member/getMemberInfo`) > -1) {
-        let ck = $request.headers.Token
+    if($request.url.indexOf(`job/listJob.json`) > -1) {
+        let ck = $request.url.split('sessionId=')[1]
         
         if(userCookie) {
             if(userCookie.indexOf(ck) == -1) {
                 userCookie = userCookie + '@' + ck
-                $.setdata(userCookie, 'ksfcysToken');
+                $.setdata(userCookie, 'jjyCookie');
                 ckList = userCookie.split('@')
-                $.msg(jsname+` 获取第${ckList.length}个Token成功: ${ck}`)
+                $.msg(jsname+` 获取第${ckList.length}个ck成功: ${ck}`)
             }
         } else {
-            $.setdata(ck, 'ksfcysToken');
-            $.msg(jsname+` 获取第1个Token成功: ${ck}`)
+            $.setdata(ck, 'jjyCookie');
+            $.msg(jsname+` 获取第1个ck成功: ${ck}`)
         }
     }
 }
 
 async function checkEnv() {
     if(userCookie) {
-        for(let userCookies of userCookie.split('@')) {
+        let splitor = envSplitor[0];
+        for(let sp of envSplitor) {
+            if(userCookie.indexOf(sp) > -1) {
+                splitor = sp;
+                break;
+            }
+        }
+        for(let userCookies of userCookie.split(splitor)) {
             if(userCookies) userList.push(new UserInfo(userCookies))
         }
         userCount = userList.length
@@ -179,12 +149,13 @@ async function checkEnv() {
 //通知
 async function showmsg() {
     if(!notifyStr) return;
-    const notify = $.isNode() ? require('./sendNotify') : '';
-    if(!notify) return;
     notifyBody = jsname + "运行通知\n\n" + notifyStr
-    if (notifyFlag == 1) {
+    if (notifyFlag > 0) {
         $.msg(notifyBody);
-        if($.isNode()){await notify.sendNotify($.name, notifyBody );}
+        if($.isNode()){
+            var notify = require('./sendNotify');
+            await notify.sendNotify($.name, notifyBody );
+        }
     } else {
         console.log(notifyBody);
     }
@@ -207,29 +178,28 @@ async function pushDear(str) {
     console.log(`\n========== PushDear 通知发送${retStr} ==========\n`)
 }
 ////////////////////////////////////////////////////////////////////
-function populateUrlObject(url,token,body=''){
+function populateUrlObject(url,auth,body=''){
     let host = url.replace('//','/').split('/')[1]
     let urlObject = {
         url: url,
         headers: {
             'Host': host,
-            'Connection': 'Keep-Alive',
-            'Token': token,
-            'Accept' : 'application/json, text/plain, */*',
-            'Accept-Encoding' : 'gzip,compress,br,deflate',
-            'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.18(0x1800122d) NetType/WIFI Language/zh_CN',
         },
     }
-    if(body) urlObject.body = body
+    if(auth) {
+        urlObject.headers.Authorization = 'Bearer ' + auth;
+        urlObject.headers.Cookie = `b2_token=${auth};`;
+    }
+    if(body) {
+        urlObject.body = body
+        urlObject.headers['Content-Type'] =  'application/x-www-form-urlencoded'
+        urlObject.headers['Content-Length'] = urlObject.body ? urlObject.body.length : 0
+    }
     return urlObject;
 }
 
 async function httpRequest(method,url) {
     httpResult = null
-    if(method == 'post') {
-        url.headers['Content-Type'] =  'application/x-www-form-urlencoded;'
-        url.headers['Content-Length'] = url.body ? url.body.length : 0
-    }
     return new Promise((resolve) => {
         $[method](url, async (err, resp, data) => {
             try {
@@ -283,6 +253,26 @@ function padStr(num,length,padding='0') {
     }
     retStr += numStr
     return retStr;
+}
+
+function json2str(obj,encodeUrl=false) {
+    let ret = []
+    for(let keys of Object.keys(obj).sort()) {
+        let v = obj[keys]
+        if(encodeUrl) v = encodeURIComponent(v)
+        ret.push(keys+'='+v)
+    }
+    return ret.join('&');
+}
+
+function str2json(str,decodeUrl=false) {
+    let ret = {}
+    for(let item of str.split('&')) {
+        let kv = item.split('=')
+        if(decodeUrl) ret[kv[0]] = decodeURIComponent(kv[1])
+        else ret[kv[0]] = kv[1]
+    }
+    return ret;
 }
 
 function randomString(len=12) {

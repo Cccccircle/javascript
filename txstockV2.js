@@ -20,14 +20,14 @@ V2P，圈X重写：
 小程序入口：公众号 腾讯自选股微信版->右下角好福利->福利中心
 [task_local]
 #腾讯自选股
-35 11,16 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/txstockV2.js, tag=腾讯自选股, enabled=true
+35 11,16 * * * https://raw.githubusercontent.com/leafTheFish/DeathNote/main//txstockV2.js, tag=腾讯自选股, enabled=true
 [rewrite_local]
-https://wzq.tenpay.com/cgi-bin/.*user.*.fcgi url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/txstockV2.js
+https://wzq.tenpay.com/cgi-bin/.*user.*.fcgi url script-request-header https://raw.githubusercontent.com/leafTheFish/DeathNote/main//txstockV2.js
 [MITM]
 hostname = wzq.tenpay.com
 */
+const $ = new Env('腾讯自选股V2');
 const jsname = '腾讯自选股V2'
-const $ = new Env(jsname);
 
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
 let notifyStr = ''
@@ -35,7 +35,6 @@ let notifyStr = ''
 let envSplitor = ['\n','@','#']
 let httpResult //global buffer
 
-let withdrawCash = ($.isNode() ? (process.env.TxStockCash) : ($.getval('TxStockCash'))) || 5; //0为不自动提现,1为自动提现1元,5为自动提现5元
 let helpFlag = ($.isNode() ? (process.env.TxStockHelp) : ($.getval('TxStockHelp'))) || 1; //0为不做分享助力任务，1为多用户互相分享助力
 let newbieFlag = ($.isNode() ? (process.env.TxStockNewbie) : ($.getval('TxStockNewbie'))) || 0; //0为不做新手任务，1为自动做新手任务
 let userCookie = ($.isNode() ? process.env.TxStockCookie : $.getdata('TxStockCookie')) || '';
@@ -149,30 +148,26 @@ class UserInfo {
                 let lastCoin = this.coin
                 this.coin = result.shop_asset ? result.shop_asset.amount : 0
                 if(lastCoin > -1) {
-                    logAndNotify(`账号[${this.name}]金币余额：${this.coin}，本次运行共获得${this.coin-lastCoin}金币`)
+                    logAndNotify(`账号${this.index}[${this.name}]金币余额：${this.coin}，本次运行共获得${this.coin-lastCoin}金币`)
                 } else {
-                    console.log(`账号[${this.name}]金币余额：${this.coin}`)
+                    console.log(`账号${this.index}[${this.name}]金币余额：${this.coin}`)
                 }
                 
-                if(isWithdraw && withdrawCash > 0) {
+                if(isWithdraw) {
                     if(result.cash && result.cash.length > 0) {
-                        let cashStr = `${withdrawCash}元现金`
                         for(let cashItem of result.cash) {
-                            if(cashItem.item_desc == cashStr){
-                                if(parseInt(this.coin) >= parseInt(cashItem.coins)){
-                                    logAndNotify(`账号[${this.name}]金币余额多于${cashItem.coins}，开始提现${cashStr}`);
-                                    await $.wait(TASK_WAITTIME);
-                                    await this.getWithdrawTicket(cashItem.item_id);
-                                } else {
-                                    console.log(`账号[${this.name}]金币余额不足${cashItem.coins}，不提现`);
-                                }
-                                break;
+                            if(parseInt(this.coin) >= parseInt(cashItem.coins)){
+                                logAndNotify(`账号${this.index}[${this.name}]金币余额多于${cashItem.coins}，开始提现`);
+                                await $.wait(TASK_WAITTIME);
+                                await this.getWithdrawTicket(cashItem.item_id);
+                            } else {
+                                console.log(`账号${this.index}[${this.name}]金币余额不足${cashItem.coins}，不提现`);
                             }
                         }
                     }
                 }
             } else {
-                console.log(`账号[${this.name}]查询账户余额失败: ${result.retmsg}`)
+                console.log(`账号${this.index}[${this.name}]查询账户余额失败: ${result.retmsg}`)
             }
         } catch(e) {
             console.log(e)
@@ -1097,9 +1092,9 @@ class UserInfo {
                     for(let type in helpee.shareCodes.task) {
                         if(helper.hasWxCookie) {
                             await helper.wxDoShare(type,helpee.shareCodes.task[type]); 
-                        } else {
-                            await helper.appDoShare(type,helpee.shareCodes.task[type]); 
+                            await $.wait(TASK_WAITTIME);
                         }
+                        await helper.appDoShare(type,helpee.shareCodes.task[type]); 
                         await $.wait(TASK_WAITTIME);
                     }
                 }
