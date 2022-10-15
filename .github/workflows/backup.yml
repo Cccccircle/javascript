@@ -37,13 +37,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
       with:
-        files: "./js"
+        files: "./zqkd_read.js"
         name: "test"
         tag_name: "test11"
         body: "ufjdjd"
-
-
-
 
     - name: delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
