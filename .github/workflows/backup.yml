@@ -39,7 +39,7 @@ jobs:
         name: "test"
         tag_name: "test11"
         body: "ufjdjd"
-       # repository: "Cccccircle/javascript"
+        repository: "Cccccircle/javascript"
 
 
     - name: 清理旧的发布
