@@ -14,9 +14,10 @@ jobs:
       run: |
         #rm -rf ./* 
         #git clone https://github.com/okyyds/yydspure.git
-        rm -rf /home/runner/work/javascript/javascript/*
+        #rm -rf /home/runner/work/javascript/javascript/*
         #cp -rf yydspure/* ./
         #rm -rf yydspure
+        echo $GITHUB_WORKSPACE
     - name: '提交更新'
       id: commit
       run: |
