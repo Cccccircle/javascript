@@ -31,6 +31,20 @@ jobs:
         github_token: ${{ secrets.PAT }}
         branch: main
    
+    - name: Upload firmware for release
+      uses: softprops/action-gh-release@v1
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
+      with:
+        files: "./js"
+        name: "test"
+        tag_name: "test11"
+        body: "ufjdjd"
+
+
+
+
     - name: delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       with:
