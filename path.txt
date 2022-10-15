@@ -1,1 +1,2 @@
 /home/runner/work/javascript/javascript
+/home/runner/work/javascript/javascript
