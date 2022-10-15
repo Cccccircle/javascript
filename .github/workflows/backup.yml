@@ -41,6 +41,17 @@ jobs:
         name: "test"
         tag_name: "test11"
         body: "ufjdjd"
+        repository: "Cccccircle/javascript"
+
+
+- name: 清理旧的发布
+      uses: dev-drprasad/delete-older-releases@v0.1.0
+      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      with:
+        keep_latest: 3
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
 
     - name: delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
