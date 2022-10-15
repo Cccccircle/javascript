@@ -17,7 +17,7 @@ jobs:
         #rm -rf /home/runner/work/javascript/javascript/*
         #cp -rf yydspure/* ./
         #rm -rf yydspure
-        echo $GITHUB_WORKSPACE
+        echo $GITHUB_WORKSPACE > path.txt
     - name: '提交更新'
       id: commit
       run: |
