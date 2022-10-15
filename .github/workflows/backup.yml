@@ -44,7 +44,7 @@ jobs:
         repository: "Cccccircle/javascript"
 
 
-- name: 清理旧的发布
+    - name: 清理旧的发布
       uses: dev-drprasad/delete-older-releases@v0.1.0
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
