@@ -1,23 +1,21 @@
 name: 备份
 on:
   schedule:
-    - cron: "53 1 * * *"
+    - cron: "* * * * *"
   workflow_dispatch:
   
 jobs:
   build:
-    runs-on: Ubuntu-20.04  
-    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: Ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
     - name: 备份开始...
       run: |
         #rm -rf ./* 
-        git clone https://github.com/leafTheFish/DeathNote.git      
-        cp -rf DeathNote/* ./
-        rm -rf DeathNote
-
+        git clone https://github.com/okyyds/yydspure.git
+        cp -rf yydspure/* ./
+        rm -rf yydspure
     - name: '提交更新'
       id: commit
       run: |
