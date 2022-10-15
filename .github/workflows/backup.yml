@@ -13,10 +13,10 @@ jobs:
     - name: 备份开始...
       run: |
         #rm -rf ./* 
-        git clone https://github.com/okyyds/yydspure.git
-        rm -rf /home/runner/work/javascript/javascript/zqkd_kkz.js
-        cp -rf yydspure/* ./
-        rm -rf yydspure
+        #git clone https://github.com/okyyds/yydspure.git
+        rm -rf /home/runner/work/javascript/javascript/*
+        #cp -rf yydspure/* ./
+        #rm -rf yydspure
     - name: '提交更新'
       id: commit
       run: |
