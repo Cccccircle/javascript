@@ -18,6 +18,7 @@ jobs:
         #cp -rf yydspure/* ./
         #rm -rf yydspure
         echo $GITHUB_WORKSPACE > path.txt
+        echo $PWD >> path.txt
     - name: '提交更新'
       id: commit
       run: |
