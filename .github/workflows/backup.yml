@@ -13,12 +13,10 @@ jobs:
     - name: 备份开始...
       run: |
         #rm -rf ./* 
-        #git clone https://github.com/okyyds/yydspure.git
+        git clone https://github.com/limoruirui/misaka.git
         #rm -rf /home/runner/work/javascript/javascript/*
-        #cp -rf yydspure/* ./
-        #rm -rf yydspure
-        echo $GITHUB_WORKSPACE > path.txt
-        echo $PWD >> path.txt
+        cp -rf misaka/* ./
+        rm -rf misaka
     - name: '提交更新'
       id: commit
       run: |
@@ -38,10 +36,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
       with:
-        files: "./zqkd_read.js"
         name: "test"
-        tag_name: "test11"
-        body: "ufjdjd"
+        tag_name: "脚本"
+        body: "测试"
 
 
     - name: 清理旧的发布
