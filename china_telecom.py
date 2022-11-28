@@ -30,7 +30,7 @@ from base64 import b64encode
 from tools.aes_encrypt import AES_Ctypt
 from tools.rsa_encrypt import RSA_Encrypt
 from tools.tool import timestamp, get_environ, print_now
-from tools.ql_api import get_envs, disable_env, post_envs, put_envs
+#from tools.ql_api import get_envs, disable_env, post_envs, put_envs
 from tools.send_msg import push
 from login.telecom_login import TelecomLogin
 from string import ascii_letters, digits
@@ -413,26 +413,11 @@ def get_cookie():
     return ck_list 
 
 if __name__ == "__main__":
-    user_map = get_cookie()
+    phone = get_environ("TELECOM_PHONE")
+    password = get_environ("TELECOM_PASSWORD")
     foods = int(float(get_environ("TELECOM_FOOD", 0, False)))
-    for i in range(len(user_map)):
-        phone=""
-        password=""
-        userinfo = user_map[i].split("&")
-        if len(userinfo)>1:
-            phone = userinfo[0]
-            password = userinfo[1]
-        print('开始执行第{}个账号：{}'.format((i+1),phone))
-        if phone == "":
-            exit(0)
-        if password == "":
-            print_now("电信服务密码未提供 只执行部分任务")
-        if datetime.now().hour + (8 - int(strftime("%z")[2])) == 12:
-            telecom = ChinaTelecom(phone, password, False)
-            telecom.init()
-            telecom.convert_reward()
-        else:
-            telecom = ChinaTelecom(phone, password)
-            telecom.main()
-        print("\n")
-        print("\n")
+    if phone == "":
+        exit(0)
+    if password == "":
+        print_now("电信服务密码未提供 只执行部分任务")
+    ChinaTelecom(phone, password).main()
