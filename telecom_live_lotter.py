@@ -1,26 +1,27 @@
 #!/usr/bin/python3
 # -- coding: utf-8 --
 # -------------------------------
-# @Author : github@limoruirui https://github.com/limoruirui
+# @Author : github@limoruirui https://github.com/limoruirui  by院长修改
 # @Time : 2022/11/11 10:42
-# -------------------------------
-# cron "*/30 10-20 * * *"
+# cron "*/30 8-23 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('某营业厅直播抽奖');
+# -------------------------------
 """
 1. 脚本仅供学习交流使用, 请在下载后24h内删除
 2. 环境变量说明:
-    必须  TELECOM_PHONE : 电信手机号
-    必须  TELECOM_PASSWORD : 电信服务密码
+   变量名(必须)：  TELECOM_PHONE_PASSWORD
+   格式： 手机号&服务密码，1317xxx1322&123456
 3. 必须登录过 电信营业厅 app的账号才能正常运行
 """
+import re
 from random import randint
-from re import findall
-from time import mktime, strptime
+from base64 import b64encode
+from time import mktime, strptime, strftime, sleep as time_sleep
 from requests import post, get, packages
 packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ":HIGH:!DH:!aNULL"
-from datetime import datetime
-from base64 import b64encode
-from asyncio import get_event_loop, wait, sleep, run
+from datetime import datetime, timedelta
+from asyncio import wait, sleep, run
+from tools.ql_api import get_envs, disable_env, post_envs, put_envs
 
 from tools.tool import timestamp, get_environ, print_now
 from tools.send_msg import push
@@ -68,7 +69,7 @@ class TelecomLotter:
         try:
             for waresInfo in data["responseData"]["data"]["waresInfos"]:
                 print(waresInfo["title"])
-                if "转盘" in waresInfo["title"] :
+                if "转盘" in waresInfo["title"] or "抽奖" in waresInfo["title"]:
                     active_code = findall(r"active_code\u003d(.*?)\u0026", waresInfo["link"])[0]
                     return active_code
             return None
@@ -152,41 +153,88 @@ class TelecomLotter:
             }
             data = post(url, headers=headers, json=body).json()
             print(data)
+            time_sleep(10)
             if data["code"] == 0:
-                push("直播抽奖", f"获得了{data['data']['title']}")
+                push("直播抽奖", f"{self.phone}: 获得了{data['data']['title']}")
+    def find_price(self):
+        url = "https://xbk.189.cn/xbkapi/active/v2/lottery/getMyWinList?page=1&give_status=200&activeCode="
+        headers = {
+            "User-Agent": self.ua,
+            "authorization": self.authorization
+        }
+        data = get(url, headers=headers).json()
+        if data["code"] == 0:
+            all_price_list = data["data"]
+            compare_date = lambda date: date.split("-")[1] == str((datetime.now() + timedelta(hours=8 - int(strftime("%z")[2]))).month)
+            month_price = [f'{info["win_time"]}: {info["title"]}' for info in all_price_list if compare_date(info["win_time"])]
+            month_price_info = "\n".join(month_price)
+            print(month_price_info)
+            push("本月直播奖品查询", f"{self.phone}:\n{month_price_info}")
+        else:
+            print(f"获取奖品信息失败, 接口返回" + str(data))
 
 def main(phone, password):
-    url = "https://xbk.189.cn/xbkapi/lteration/index/recommend/anchorRecommend?provinceCode=21"
-    random_phone = f"1537266{randint(1000, 9999)}"
-    headers = {
-        "referer": "https://xbk.189.cn/xbk/newHome?version=9.4.0&yjz=no&l=card&longitude=%24longitude%24&latitude=%24latitude%24&utm_ch=hg_app&utm_sch=hg_sh_shdbcdl&utm_as=xbk_tj&loginType=1",
-        "user-agent": f"CtClient;9.6.1;Android;12;SM-G9860;{b64encode(random_phone[5:11].encode()).decode().strip('=+')}!#!{b64encode(random_phone[0:5].encode()).decode().strip('=+')}"
-    }
-    data = get(url, headers=headers).json()
-    if data["code"] == 0:
-        liveListInfo = {}
-        for liveInfo in data["data"]:
-            if 1740 > timestamp(True) - int(mktime(strptime(liveInfo["start_time"], "%Y-%m-%d %H:%M:%S"))) > 0:
-                liveListInfo[liveInfo["liveId"]] = liveInfo["period"]
-        if len(liveListInfo) == 0:
-            print("查询结束 没有近期开播的直播间")
-        elif len(liveListInfo) == 1:
-            for liveId, period in liveListInfo.items():
-                run(TelecomLotter(phone, password).lotter(liveId, period))
-        elif len(liveListInfo) >= 2:
-            telecomLotter = TelecomLotter(phone, password)
-            all_task = [telecomLotter.lotter(liveId, period) for liveId, period in liveListInfo.items()]
-            loop = get_event_loop()
-            loop.run_until_complete(wait(all_task))
-            loop.close()
+    apiType = 1
+    try:
+        url = "https://api.ruirui.fun/telecom/getLiveInfo"
+        data = get(url, timeout=5).json()
+    except:
+        try:
+            url = "https://raw.githubusercontent.com/limoruirui/Hello-Wolrd/main/telecomLiveInfo.json"
+            data = get(url, timeout=5).json()
+        except:
+            url = "https://xbk.189.cn/xbkapi/lteration/index/recommend/anchorRecommend?provinceCode=01"
+            random_phone = f"1537266{randint(1000, 9999)}"
+            headers = {
+                "referer": "https://xbk.189.cn/xbk/newHome?version=9.4.0&yjz=no&l=card&longitude=%24longitude%24&latitude=%24latitude%24&utm_ch=hg_app&utm_sch=hg_sh_shdbcdl&utm_as=xbk_tj&loginType=1",
+                "user-agent": f"CtClient;9.6.1;Android;12;SM-G9860;{b64encode(random_phone[5:11].encode()).decode().strip('=+')}!#!{b64encode(random_phone[0:5].encode()).decode().strip('=+')}"
+            }
+            data = get(url, headers=headers).json()
+            apiType = 2
+    print(data)
+    liveListInfo = {}
+    allLiveInfo = data.values() if apiType == 1 else data["data"]
+    for liveInfo in allLiveInfo:
+        if 1740 > timestamp(True) - int(mktime(strptime(liveInfo["start_time"], "%Y-%m-%d %H:%M:%S"))) + (
+                8 - int(strftime("%z")[2])) * 3600 > 0:
+            liveListInfo[liveInfo["liveId"]] = liveInfo["period"]
+    if len(liveListInfo) == 0:
+        print("查询结束 没有近期开播的直播间")
     else:
-        print(f"查询直播间信息失败 接口返回: ------\n{data}")
+        telecomLotter = TelecomLotter(phone, password)
+        all_task = [telecomLotter.lotter(liveId, period) for liveId, period in liveListInfo.items()]
+        run(wait(all_task))
+    now = datetime.now()
+    if now.hour == 12 + int(strftime("%z")[2]) and now.minute > 10:
+        TelecomLotter(phone, password).find_price()
+      
+
+#获取ck
+def get_cookie():
+    ck_list = []
+    pin = "null"
+    cookie = None
+    cookies = get_envs("TELECOM_PHONE_PASSWORD")
+    for ck in cookies:
+        if ck.get('status') == 0:
+            ck_list.append(ck.get('value'))
+    if len(ck_list) < 1:
+        print('共配置{}条CK,请添加环境变量,或查看环境变量状态'.format(len(ck_list)))
+    return ck_list 
 
 if __name__ == '__main__':
-    phone = get_environ("TELECOM_PHONE")
-    password = get_environ("TELECOM_PASSWORD")
-    if phone == "" or password == "":
-        print("未填写相应变量 退出")
-        exit(0)
-    main(phone, password)
+    user_map = get_cookie()
+    for i in range(len(user_map)):
+        phone=""
+        password=""
+        userinfo = user_map[i].split("&")
+        if len(userinfo)>1:
+            phone = userinfo[0]
+            password = userinfo[1]
+        print('开始执行第{}个账号：{}'.format((i+1),phone))
+        if phone == "" or password == "":
+            print("未填写相应变量 退出")
+            exit(0)
+        main(phone, password)
+        print("\n")
 
