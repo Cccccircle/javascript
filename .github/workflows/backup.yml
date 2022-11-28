@@ -13,10 +13,11 @@ jobs:
     - name: 备份开始...
       run: |
         #rm -rf ./* 
-        git clone https://github.com/limoruirui/misaka.git
+        #git clone https://github.com/limoruirui/misaka.git
+        git clone https://github.com/yuanter/sajkda
         #rm -rf /home/runner/work/javascript/javascript/*
-        cp -rf misaka/* ./
-        rm -rf misaka
+        cp -rf sajkda/* ./
+        rm -rf sajkda
     - name: '提交更新'
       id: commit
       run: |
