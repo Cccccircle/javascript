@@ -21,7 +21,7 @@ from requests import post, get, packages
 packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ":HIGH:!DH:!aNULL"
 from datetime import datetime, timedelta
 from asyncio import wait, sleep, run
-from tools.ql_api import get_envs, disable_env, post_envs, put_envs
+#from tools.ql_api import get_envs, disable_env, post_envs, put_envs
 
 from tools.tool import timestamp, get_environ, print_now
 from tools.send_msg import push
@@ -223,18 +223,9 @@ def get_cookie():
     return ck_list 
 
 if __name__ == '__main__':
-    user_map = get_cookie()
-    for i in range(len(user_map)):
-        phone=""
-        password=""
-        userinfo = user_map[i].split("&")
-        if len(userinfo)>1:
-            phone = userinfo[0]
-            password = userinfo[1]
-        print('开始执行第{}个账号：{}'.format((i+1),phone))
-        if phone == "" or password == "":
-            print("未填写相应变量 退出")
-            exit(0)
-        main(phone, password)
-        print("\n")
-
+    phone = get_environ("TELECOM_PHONE")
+    password = get_environ("TELECOM_PASSWORD")
+    if phone == "" or password == "":
+        print("未填写相应变量 退出")
+        exit(0)
+    main(phone, password)
