@@ -1,98 +1,160 @@
-# 原仓库来源limoruirui/misaka，本仓库仅做修改
 
-# misaka
-- 随缘维护和上传, 请不要上传或者转载到其它地方。
-- 本仓库脚本仅供用于学习及参考对应web/app的参数解密并提供对应demo用于测试,请不要询问如何多账号等
-- 食用方法都在脚本内,请自行查看。
-- 觉得好用可以点个star。
-## 使用方法
-### 一. ubuntu服务器
-- 拉取整个仓库(部分文件可以单独跑)
-  ```
-  // 以下几条命令 请不要带着 $/# 一起复制 这两个符号只是代表了所需权限
-  $ git clone https://github.com/yuanter/misaka
-- 安装依赖
-  ```
-  $ pip3 install -r requirements.txt
-- 然后设置环境变量 以ubuntu为例 只提供参考
-  ```
-  $ sudo vim /etc/profile
-  写入 export key="value" 多个环境变量就写入多行
-- 执行脚本
-  ```
-  1.手动执行测试 在主目录下 执行
-    $ python3 xxx.py >> logs/xxx.log
-  2. crontab定时任务
-    0 0 * * * . /etc/profile;cd 目录的绝对路径 && python3 xxx.py >> logs/xxx.log 2>&1
-### 二. 青龙面板
-- 拉取仓库
-  ```
-  ql repo https://github.com/yuanter/misaka.git "" "backUp|tools|JS|logs|login"  "tools|JS|logs|login"
-  国内服务器太卡的话用下面这个
-  ql repo https://github.ruirui.fun/https://github.com/yuanter/misaka.git "" "backUp|tools|JS|logs|login"  "tools|JS|logs|login"
-- 安装依赖
-  ```
-  安装依赖时失败时 如果日志内有提示 gcc not found 的关键字 则进入docker容器中 依次执行
-  $ apk update
-  $ apk add build-base 
-  此时在docker容器内执行 gcc --version 若正确显示版本信息 则可继续安装
-  
-  第一种方法: 在github复制requirements.txt内的所有东西 
-  打开面板-依赖管理-新建依赖 依赖类型选 python3 自动拆分选 是 把复制的东西粘贴在名称内 确定即可
-  
-  第二种方法: 进入容器中 依次执行
-  $ cd data/scripts/limoruirui_misaka
-  $ wget https://raw.githubusercontent.com/yuanter/misaka/master/requirements.txt
-  $ pip3 install -r requirements.txt
-- 按照脚本文件内的说明设置环境变量
-## 环境变量说明 
-- 一.推送
-  - 1.tgbot 
-    - TG_USER_ID  tg用户id
-    - TG_BOT_TOKEN tgbot的token
-    - TG_API_HOST(可选, 若无或不需要则不设置) tg反向代理api
-    - TG_BOT_TOKEN_ADDED (可选) 用于设置额外的tgbot的token 填写此变量后 则不会再去读取TG_BOT_TOKEN 当填写了TG_BOT_TOKEN 又不希望脚本使用tg推送时 则将TG_BOT_TOKEN_ADDED设置为 no
-  - 2.pushplus
-    - PUSH_PLUS_TOKEN 推送加的token
-    - PUSH_PLUS_TOKEN_ADDED (可选) 同上面的TG_BOT_TOKEN_ADDED
-- 二.脚本内变量 (**<big>具体参照脚本文件内的说明</big>**)
-  - 1. 联通营业厅app(china_unicom.py)
-    - PHONE_NUM 手机号码 (必须)
-    - UNICOM_LOTTER 是否自动抽奖 (选填 True | False, 默认为是)
-  - 2. 电信营业厅app(china_telecom.py)
-    - TELECOM_PHONE_PASSWORD 手机号码&服务密码
-    - 例如 131785xxx98&123456  或者 131785xxx98&
-    - 手机号码 (必须)
-    - 电信服务密码 (选择)
-    - TELECOM_FOOD 宠物喂食次数 (选择)
-  - 3. iqiyi(iqiyi.py & iqiyiRed.py)
-    - iqy_ck 爱奇艺cookie 可整段 也可只保留P00001=xxx; (必须)
-    - get_iqiyi_dfp 是否请求我的api来获取参数 再去请求爱奇艺的api来获取dfp dfp类似于设备号 cookie字段内有 (选择 True | False 默认为否)
-    - sleep_await 因观影时长同步有延迟 故建议完成任务后等待几分钟再查询 (选填 True | False 默认为是)
-  - 4. 无忧行app(wxy.py)
-    - WXY_TOKEN 无忧行app内的token (必须)
-  - 5. 顺丰速运(sfexpress.py)
-    - SF_SIGN 顺丰app的sign (必须)
-## 文件目录说明
-- 主目录 -- 存放主文件
-- Tools -- 存放一些脚本内经常需要重复使用的工具
-- JS -- 存放一些网站自己写的 过于复杂 不好使用python重写的加解密的js文件供python调用
-- backUp -- 存放已经无法正常执行的文件
-- logs -- 存放任务日志
-## 特别声明
+## DY
 
-- 本仓库发布的脚本及其中涉及的任何解密分析脚本，仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断。
+>加密js审查，无重复，默认无加购，内部互助(可选模式);
 
-- 本项目内所有资源文件，禁止任何公众号、自媒体进行任何形式的转载、发布。
+ 
+>欢迎大家issue、pr，会一一回复！
 
-- 本人对任何脚本问题概不负责，包括但不限于由任何脚本错误导致的任何损失或损害。
 
-- 间接使用脚本的任何用户，包括但不限于建立VPS或在某些行为违反国家/地区法律或相关法规的情况下进行传播, 本人对于由此引起的任何隐私泄漏或其他后果概不负责。
+### 上车注意安全，不用不明js，app，exe！
 
-- 请勿将本仓库的任何内容用于商业或非法目的，否则后果自负。
+### 防走失[TG频道](https://t.me/dylan_jdpro)
 
-- 如果任何单位或个人认为该项目的脚本可能涉嫌侵犯其权利，则应及时通知并提供身份证明，所有权证明，我们将在收到认证文件后删除相关脚本。
+### 一键部署（2.11.3版本青龙，默认国内机拉库命令，建好后根据自己情况调整）
 
-- 任何以任何方式查看此项目的人或直接或间接使用该项目的任何脚本的使用者都应仔细阅读此声明。本人保留随时更改或补充此免责声明的权利。一旦使用并复制了任何相关脚本或本项目的规则，则视为您已接受此免责声明。
+使用root用户运行下面一串命令，支持Centos/Ubuntu系统
 
-**您必须在下载后的24小时内从计算机或手机中完全删除以上内容**
+```
+curl -sSL https://js.dayplus.xyz/https://raw.githubusercontent.com/6dylan6/jdpro/main/docker/ql1key.sh -o install.sh && bash install.sh
+```
+
+## 拉库指令
+
+【注意】2.11.1前版本青龙config.sh配置把GithubProxyUrl="https://ghproxy.com/ （差不在多19行）" 修改为GithubProxyUrl=""，否则拉取失败，以上版本无需配置。
+
+2.13版本以上拉库方式变了，到订阅管理添加订阅，请看配置[截图](https://github.com/6dylan6/jdpro/issues/251)
+
+国内机用下面指令（带代理）：
+
+```
+ql repo https://ghproxy.com/https://github.com/6dylan6/jdpro.git "jd_|jx_|jddj_" "backUp" "^jd[^_]|USER|JD|function|sendNotify"
+
+```
+如默认代理ghproxy.com 拉不动，换备用的 js.dayplus.xyz
+
+国外机用下面指令（无需代理）：
+
+```
+ql repo https://github.com/6dylan6/jdpro.git "jd_|jx_|jddj_" "backUp" "^jd[^_]|USER|JD|function|sendNotify"
+
+```
+
+Gitee版不能正常拉取，已停止维护！（20220711）
+
+
+任务定时建议 50 7-23/2 * * *  
+
+
+线报监控类脚本已移除，需要的到 https://github.com/6dylan6/jdm.git
+
+自动评价 需要的到 https://github.com/6dylan6/auto_comment.git
+
+
+## 使用流程
+
+1、青龙部署。
+
+2、修改青龙config.sh配置，差不多在17行（特别注意，没有修改此配置，任务拉不全，一键部署忽略此处）
+
+RepoFileExtensions="js py"修改为 RepoFileExtensions="js py sh ts" 保存
+
+3、新建拉库任务，并执行，刷新浏览器即可看到添加的任务。
+
+4、添加CK环境变量，多CK不要写在一起，每个都新建JD_COOKIE变量；
+
+
+
+<details>
+<summary>使用技巧与问题解答</summary>
+<pre><code>
+
+1、涉及兑换或需要抢的可以配置任务并发，就是全部一起跑。
+
+并发配置方法：
+
+在任务后面加conc JD_COOKIE
+
+如 task XXXXX.js conc JD_COOKIE
+
+任务分组运行方法：
+
+在任务后面加desi JD_COOKIE 需要运行的ck序号
+
+如 task XXXX.js desi JD_COOKIE 1-10  前10个一组运行，2 8 9就是第2/8/9序号的ck执行，以此类推。
+
+2、极速版签到建议并发，号多跑很久的，一个号要30多分钟。。
+
+task 6dylan6_jdpro_jd_speed_sign.js conc JD_COOKIE （具体任务路径不同版本不一样，按自己的写）
+
+3、保价建议并发，否则可能前几个号正常跑，后面会报频繁！
+
+task 6dylan6_jdpro_jd_price.js conc JD_COOKIE
+
+4、通知支持一对一推送和显示备注，还有分组通知等用法参考[notify.md](./notify.md)
+
+备注显示变量如下
+
+export NOTIFY_SHOWNAMETYPE="1"    不做任何变动
+
+export NOTIFY_SHOWNAMETYPE="2"    效果是 :  账号名称：别名(备注)	
+
+export NOTIFY_SHOWNAMETYPE="3"    效果是 :  账号名称：pin(备注)
+
+export NOTIFY_SHOWNAMETYPE="4"    效果是 :  账号名称：备注
+
+5、因为青龙有随机延时（可以在配置文件设置为0，默认300秒），所以涉及准点运行的任务，最后加now，如果是desi或conc不用加也会准时跑。
+
+6、青龙系统通知（新增删除任务、登录等通知），需把通知变量写到config.sh文件，在环境变量里只发脚本运行通知哈。
+
+7、如果通知文件发现和库里的不一致，那是被青龙自带的覆盖了，手动拷贝一份到deps目录下。
+
+8、建议调整任务运行超时时间，青龙默认1小时有些脚本跑不完就被强制kill，config.sh里配置。CommandTimeoutTime="3h"  即改为3小时，根据自己的号数量调整。
+</code></pre>
+</details>
+
+## 加密脚本说明
+
+<details>
+<summary>加密脚本，不放心可禁用</summary>
+<pre><code>
+加密的会在任务后添加加密标识
+开卡系列都加密 
+</code></pre>
+</details>
+
+## 互助模式使用说明
+
+集成互助研究院taskbefore,code模块，可实现临时禁止某些CK参加所有活动或某些活动功能，实现重组CK顺序功能，包括随机、优先、轮换、组队、分段等功能
+
+常用变量举例：
+
+Recombin_CK_Mode="1"  全部顺序随机
+
+Recombin_CK_Mode="2" Recombin_CK_ARG1="15" 假设有100个CK，前15个CK按正常顺序靠前，其余CK随机乱序
+
+Recombin_CK_Mode="3" Recombin_CK_ARG1="5" Recombin_CK_ARG2="5"  假设有100个CK，希望前5个账号始终保持在前部，剩余95个账号按照轮换模式每天轮换5个
+
+其他用法具体参考[文档](https://docs.qq.com/doc/DTXh6QUVjRXJ1TFdN)
+
+
+## 部分脚本环境变量
+
+[Wskey转换环境变量](https://github.com/Zy143L/wskey)
+
+|             Name             |             归属             |  属性  | 说明                                                         |
+| :--------------------------: | :--------------------------: | :----: | ------------------------------------------------------------ |
+|     `PET_NOTIFY_CONTROL`     |     东东萌宠<br>推送开关     | 非必须 | 控制京东萌宠是否静默运行,<br>`false`为否(发送推送通知消息),`true`为是(即：不发送推送通知消息) |
+|    `FRUIT_NOTIFY_CONTROL`    |     东东农场<br>推送开关     | 非必须 | 控制京东农场是否静默运行,<br>`false`为否(发送推送通知消息),`true`为是(即：不发送推送通知消息) |
+|    `NOTIFY_AUTOCHECKCK`    |       自动禁用失效CK开关  | 非必须 | 有CK失效自动禁用并通知，true为自动禁用，false不自动禁用，默认false |
+|       `JOY_FEED_COUNT`       |        宠汪汪喂食数量        | 非必须 | 控制`jd_joy_feedPets.js`脚本喂食数量,可以填的数字10,20,40,80,其他数字不可. |
+|       `NOTIFY_SKIP_LIST`       |        控制关闭某些标题的通知  | 非必须 | 通知标题在此变量里面存在(&隔开),则屏蔽不发送通知.例 : export NOTIFY_SKIP_LIST="临期京豆换喜豆&京东资产统计" |
+|      `FRUIT_BEAN_CARD`       |    农场<br>使用水滴换豆卡    | 非必须 | 农场使用水滴换豆卡(如果出现限时活动时100g水换20豆,此时比浇水划算,推荐换豆),<br>`true`表示换豆(不浇水),`false`表示不换豆(继续浇水),脚本默认是浇水 |
+|       `JD_UNSUB`             |      批量取消商品与店铺关注开关      | 非必须 | 控制jd_unsubscribe.js运行，默认为true取关，false不取关 |
+|       `JD_CART_REMOVE`       |      清空购物车      | 非必须 | 控制jd_clean_car.js运行 ，默认false不清空，true清空 |
+|   `WSKEY_DISCHECK`           |     wskey转换     | 非必须 | 默认为false检查，设置true为不检查直接转换 |
+|   `DPSTOKEN`           |     店铺签到     | 非必须 | 多个&隔开 |
+
+
+
+
