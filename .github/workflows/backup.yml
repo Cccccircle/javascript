@@ -16,7 +16,7 @@ jobs:
         #git clone https://github.com/daiyanan1992/qinglongtest.git
         git clone https://github.com/6dylan6/jdpro.git
         #rm -rf /home/runner/work/javascript/javascript/*
-        bash init.sh
+        bash init.sh $PWD/jdpro
     - name: '提交更新'
       id: commit
       run: |
