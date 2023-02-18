@@ -13,11 +13,12 @@ jobs:
     - name: 备份开始...
       run: |
         rm -rf ./* 
-        git clone https://github.com/daiyanan1992/qinglongtest.git
-        #git clone https://github.com/6dylan6/jdpro.git
+        #git clone https://github.com/daiyanan1992/qinglongtest.git
+        git clone https://github.com/6dylan6/jdpro.git
         #rm -rf /home/runner/work/javascript/javascript/*
-        mv qinglongtest/* ./
-        rm -rf qinglongtest
+        mv jdpro/* ./
+        rm -rf jdpro
+        bash init.sh
     - name: '提交更新'
       id: commit
       run: |
